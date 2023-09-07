@@ -4,6 +4,7 @@
 
 use core::fmt;
 use std::fmt::Display;
+use std::ops::Range;
 
 use crate::ACT;
 
@@ -166,6 +167,110 @@ impl Statement {
             Statement::Break => None,
         }
     }
+
+    /// Retrieves the stored token in a Statement.
+    ///
+    /// If a Statement contains multiple Statements (e.g. Declare) than just the first one is returned.
+    /// Returns None on EoF, when a slice of vectors is empty or on AttackCategory
+    pub fn as_tokens(&self) -> Vec<&Token> {
+        match self {
+            Statement::Primitive(token) => vec![token],
+            Statement::Variable(token) => vec![token],
+            Statement::Array(token, _) => todo!(),
+            Statement::Call(token, _) => todo!(),
+            Statement::Exit(stmt) => todo!(),
+            Statement::Return(stmt) => todo!(),
+            Statement::Include(stmt) => todo!(),
+            Statement::Declare(_, stmts) => todo!(),
+            Statement::Parameter(stmts) => todo!(),
+            Statement::NamedParameter(token, _) => todo!(),
+            Statement::Assign(_, _, stmt1, stmt2) => {
+                let mut tokens = stmt1.as_tokens();
+                tokens.extend(stmt2.as_tokens());
+                tokens
+            }
+            Statement::Operator(_, stmts) => {
+                let mut results = Vec::with_capacity(stmts.len());
+                for stmt in stmts {
+                    results.extend(stmt.as_tokens());
+                }
+
+                results
+            }
+            Statement::If(stmt, _, _) => todo!(),
+            Statement::For(stmt, _, _, _) => todo!(),
+            Statement::While(stmt, _) => todo!(),
+            Statement::Repeat(_, stmt) => todo!(),
+            Statement::ForEach(token, _, _) => todo!(),
+            Statement::Block(stmts) => todo!(),
+            Statement::FunctionDeclaration(token, _, _) => todo!(),
+            Statement::NoOp(token) => vec![],
+            Statement::EoF => todo!(),
+            Statement::AttackCategory(_) => todo!(),
+            Statement::Continue => todo!(),
+            Statement::Break => todo!(),
+        }
+    }
+
+    fn _position(stmts: &[&Statement]) -> ((usize, usize), (usize, usize)) {
+        let first = stmts.first();
+        let last = stmts.last();
+        if let (Some(t1), Some(t2)) = (first, last) {
+            let t1 = t1.as_tokens();
+            let t2 = t2.as_tokens();
+            if let (Some(t1), Some(t2)) = (t1.first(), t2.last()) {
+                return (t1.line_columm, (t2.line_columm.0, t2.line_columm.1 + t2.len()));
+            }
+        }
+        ((0, 0), (0, 0))
+    }
+
+    /// Returns the position of the whole statement
+    pub fn position(&self) -> ((usize, usize), (usize, usize)) {
+        match self {
+            Statement::Primitive(token) | Statement::Variable(token) => todo!(),
+            Statement::Array(_, _) => todo!(),
+            Statement::Call(_, _) => todo!(),
+            Statement::Exit(_) => todo!(),
+            Statement::Return(_) => todo!(),
+            Statement::Break => todo!(),
+            Statement::Continue => todo!(),
+            Statement::Include(_) => todo!(),
+            Statement::Declare(_, _) => todo!(),
+            Statement::Parameter(_) => todo!(),
+            Statement::NamedParameter(_, _) => todo!(),
+
+            Statement::Assign(cat, order, stmt1, stmt2) => {
+                let annoying: &Self = stmt2;
+                match annoying {
+                    Statement::NoOp(_) => Self::_position(&[&stmt1, &stmt1]),
+                    _ => Self::_position(&[&stmt1, &stmt2]),
+                }
+            }
+            Statement::Operator(_, _) => todo!(),
+            Statement::If(_, _, _) => todo!(),
+            Statement::For(_, _, _, _) => todo!(),
+            Statement::While(_, _) => todo!(),
+            Statement::Repeat(_, _) => todo!(),
+            Statement::ForEach(_, _, _) => todo!(),
+            Statement::Block(_) => todo!(),
+            Statement::FunctionDeclaration(_, _, _) => todo!(),
+            Statement::NoOp(_) => todo!(),
+            Statement::AttackCategory(_) => todo!(),
+            Statement::EoF => todo!(),
+        }
+    }
+
+    /// Calculates the byte range of the statement
+    pub fn range(&self) -> Range<usize> {
+        let ((sl, sc), (el, ec)) = self.position();
+
+        let start = sl + sc - 2;
+        let end = el + ec - 2;
+
+        // calculate based on stuff not reflected in token
+        Range { start, end }
+    }
 }
 
 impl fmt::Display for Statement {
@@ -228,5 +333,34 @@ impl fmt::Display for Statement {
             Statement::Break => write!(f, "break"),
             Statement::Continue => write!(f, "continue"),
         }
+    }
+}
+
+#[cfg(test)]
+mod position {
+    use crate::parse;
+
+    #[test]
+    fn assignment() {
+        let code = r#"
+        a = 1 + 1;
+        b = 2 * 2;
+        "#;
+        let mut parser = parse(code);
+        let mut exptected = [
+            "a = 1 + 1",
+            "b = 2 * 2",
+            "a = ++a",
+            // plas
+        ]
+        .iter();
+        let ranges: Vec<_> = parser.map(|x|x.unwrap().range()).collect();
+        dbg!(&ranges);
+
+        for range in ranges{
+            let a: &str = exptected.next().unwrap();
+            assert_eq!(&code[range], a);
+        }
+        //assert_eq!(stmt.position(), ((1, 1),(1, 9)));
     }
 }

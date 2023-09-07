@@ -225,7 +225,7 @@ mod test {
     fn token(category: Category, start: usize, end: usize) -> Token {
         Token {
             category,
-            position: (start, end),
+            line_columm: (start, end),
         }
     }
 
@@ -301,11 +301,11 @@ mod test {
                 vec![
                     Variable(Token {
                         category: Identifier(Undefined("a".to_owned())),
-                        position: (1, 1),
+                        line_columm: (1, 1),
                     }),
                     Primitive(Token {
                         category: Data(vec![49]),
-                        position: (1, (6 + shift) as usize),
+                        line_columm: (1, (6 + shift) as usize),
                     }),
                 ],
             )
@@ -330,11 +330,11 @@ mod test {
                 vec![
                     Variable(Token {
                         category: Identifier(Undefined("a".to_owned())),
-                        position: (1, 1),
+                        line_columm: (1, 1),
                     }),
                     Primitive(Token {
                         category: Number(1),
-                        position: (1, 6 + shift),
+                        line_columm: (1, 6 + shift),
                     }),
                 ],
             )
@@ -353,7 +353,7 @@ mod test {
                 Box::new(Variable(token(Identifier(Undefined("a".to_owned())), 1, 1))),
                 Box::new(Primitive(Token {
                     category: Number(1),
-                    position: (1, 5)
+                    line_columm: (1, 5)
                 }))
             )
         );
@@ -365,7 +365,7 @@ mod test {
                 Box::new(Variable(token(Identifier(Undefined("a".to_owned())), 1, 2))),
                 Box::new(Primitive(Token {
                     category: Number(1),
-                    position: (1, 6)
+                    line_columm: (1, 6)
                 }))
             )
         );
@@ -381,13 +381,13 @@ mod test {
                     Call(
                         Token {
                             category: Identifier(Undefined("x".to_owned())),
-                            position: (1, 1)
+                            line_columm: (1, 1)
                         },
                         vec![]
                     ),
                     Primitive(Token {
                         category: Number(2),
-                        position: (1, 7)
+                        line_columm: (1, 7)
                     })
                 ]
             )

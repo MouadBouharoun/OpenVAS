@@ -106,7 +106,7 @@ mod test {
     fn token(category: Category, start: usize, end: usize) -> Token {
         Token {
             category,
-            position: (start, end),
+            line_columm: (start, end),
         }
     }
 
@@ -140,22 +140,22 @@ mod test {
                 Box::new(Array(
                     Token {
                         category: Identifier(Undefined("a".to_owned())),
-                        position: (1, 1)
+                        line_columm: (1, 1)
                     },
                     None
                 )),
                 Box::new(Parameter(vec![
                     Primitive(Token {
                         category: Number(1),
-                        position: (1, 6)
+                        line_columm: (1, 6)
                     }),
                     Primitive(Token {
                         category: Number(2),
-                        position: (1, 9)
+                        line_columm: (1, 9)
                     }),
                     Primitive(Token {
                         category: Number(3),
-                        position: (1, 12)
+                        line_columm: (1, 12)
                     })
                 ]))
             )
@@ -169,25 +169,25 @@ mod test {
                 Box::new(Array(
                     Token {
                         category: Identifier(Undefined("a".to_owned())),
-                        position: (1, 1)
+                        line_columm: (1, 1)
                     },
                     Some(Box::new(Primitive(Token {
                         category: Number(0),
-                        position: (1, 3)
+                        line_columm: (1, 3)
                     })))
                 )),
                 Box::new(Parameter(vec![
                     Primitive(Token {
                         category: Number(1),
-                        position: (1, 9)
+                        line_columm: (1, 9)
                     }),
                     Primitive(Token {
                         category: Number(2),
-                        position: (1, 12)
+                        line_columm: (1, 12)
                     }),
                     Primitive(Token {
                         category: Number(4),
-                        position: (1, 15)
+                        line_columm: (1, 15)
                     })
                 ]))
             )
@@ -214,41 +214,41 @@ mod test {
             Call(
                 Token {
                     category: Identifier(Undefined("script_tag".to_owned())),
-                    position: (1, 1)
+                    line_columm: (1, 1)
                 },
                 vec![
                     NamedParameter(
                         Token {
                             category: Identifier(Undefined("name".to_owned())),
-                            position: (1, 12)
+                            line_columm: (1, 12)
                         },
                         Box::new(Primitive(Token {
                             category: String("cvss_base".to_owned()),
-                            position: (1, 17)
+                            line_columm: (1, 17)
                         }))
                     ),
                     NamedParameter(
                         Token {
                             category: Identifier(Undefined("value".to_owned())),
-                            position: (1, 30)
+                            line_columm: (1, 30)
                         },
                         Box::new(Operator(
                             Plus,
                             vec![
                                 Primitive(Token {
                                     category: Number(1),
-                                    position: (1, 36)
+                                    line_columm: (1, 36)
                                 }),
                                 Operator(
                                     Percent,
                                     vec![
                                         Primitive(Token {
                                             category: Number(1),
-                                            position: (1, 40)
+                                            line_columm: (1, 40)
                                         }),
                                         Primitive(Token {
                                             category: Number(2),
-                                            position: (1, 44)
+                                            line_columm: (1, 44)
                                         })
                                     ]
                                 )
@@ -264,16 +264,16 @@ mod test {
             Call(
                 Token {
                     category: Identifier(Undefined("script_tag".to_owned())),
-                    position: (1, 1)
+                    line_columm: (1, 1)
                 },
                 vec![NamedParameter(
                     Token {
                         category: Identifier(Undefined("name".to_owned())),
-                        position: (1, 12)
+                        line_columm: (1, 12)
                     },
                     Box::new(Primitive(Token {
                         category: Number(2),
-                        position: (1, 18)
+                        line_columm: (1, 18)
                     }))
                 )]
             )

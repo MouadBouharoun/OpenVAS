@@ -110,7 +110,7 @@ mod test {
     fn token(category: Category, start: usize, end: usize) -> Token {
         Token {
             category,
-            position: (start, end),
+            line_columm: (start, end),
         }
     }
 
@@ -140,7 +140,7 @@ mod test {
                 vec![
                     Primitive(Token {
                         category: Number(1),
-                        position: (1, 1),
+                        line_columm: (1, 1),
                     }),
                     Operator(
                         Star,
@@ -150,13 +150,13 @@ mod test {
                                 AssignOrder::AssignReturn,
                                 Box::new(Variable(Token {
                                     category: Identifier(Undefined("a".to_owned())),
-                                    position: (1, 7),
+                                    line_columm: (1, 7),
                                 })),
                                 Box::new(NoOp(None)),
                             ),
                             Primitive(Token {
                                 category: Number(1),
-                                position: (1, 11),
+                                line_columm: (1, 11),
                             }),
                         ],
                     ),
@@ -176,11 +176,11 @@ mod test {
                 Box::new(Array(
                     Token {
                         category: Identifier(Undefined("a".to_owned())),
-                        position: (1, 3),
+                        line_columm: (1, 3),
                     },
                     Some(Box::new(Primitive(Token {
                         category: Number(0),
-                        position: (1, 5),
+                        line_columm: (1, 5),
                     }))),
                 )),
                 Box::new(NoOp(None)),

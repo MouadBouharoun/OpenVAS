@@ -82,6 +82,20 @@ impl IdentifierType {
 
     }
 
+    /// Returns the length of the identifier
+    pub fn len(&self) -> usize {
+        $(
+        if self == &$define {
+            return stringify!($matcher).len();
+        }
+        )*
+        if let IdentifierType::Undefined(r) = self {
+            return r.len();
+        } else {
+            return 0;
+        }
+    }
+
 }
 impl Display for IdentifierType {
 
@@ -310,6 +324,95 @@ pub enum Category {
     UnknownSymbol,
 }
 
+impl Category {
+    fn int_log10<T>(mut i: T) -> usize
+    where
+        T: std::ops::DivAssign + std::cmp::PartialOrd + From<u8> + Copy,
+    {
+        let mut len = 0;
+        let zero = T::from(0);
+        let ten = T::from(10);
+
+        while i > zero {
+            i /= ten;
+            len += 1;
+        }
+
+        len
+    }
+
+    /// Returns the length of a category. It returns 0 on error cases.
+    pub fn len(&self) -> usize {
+        match self {
+            Category::LeftParen
+            | Category::RightParen
+            | Category::LeftBrace
+            | Category::RightBrace
+            | Category::LeftCurlyBracket
+            | Category::RightCurlyBracket
+            | Category::Comma
+            | Category::Minus
+            | Category::Dot
+            | Category::Greater
+            | Category::Percent
+            | Category::Semicolon
+            | Category::Equal
+            | Category::Less
+            | Category::DoublePoint
+            | Category::Bang
+            | Category::Tilde
+            | Category::Caret
+            | Category::Ampersand
+            | Category::Plus
+            | Category::Pipe
+            | Category::Slash
+            | Category::Star
+            | Category::X => 1,
+
+            Category::AmpersandAmpersand
+            | Category::PercentEqual
+            | Category::PipePipe
+            | Category::BangEqual
+            | Category::BangTilde
+            | Category::EqualEqual
+            | Category::EqualTilde
+            | Category::GreaterGreater
+            | Category::GreaterEqual
+            | Category::GreaterLess
+            | Category::LessLess
+            | Category::LessEqual
+            | Category::MinusMinus
+            | Category::MinusEqual
+            | Category::PlusEqual
+            | Category::PlusPlus
+            | Category::SlashEqual
+            | Category::StarStar
+            | Category::StarEqual => 2,
+
+            Category::GreaterGreaterGreater
+            | Category::GreaterGreaterEqual
+            | Category::LessLessEqual
+            | Category::GreaterBangLess => 3,
+
+            Category::GreaterGreaterGreaterEqual => 4,
+
+            Category::String(s) => s.len(),
+            Category::Data(d) => d.len(),
+            Category::Number(x) => Self::int_log10(*x),
+            Category::IPv4Address(s) => s.len(),
+            Category::Identifier(s) => s.len(),
+
+            // error cases
+            Category::IllegalIPv4Address => todo!(),
+            Category::IllegalNumber(_) => todo!(),
+            Category::Comment => todo!(),
+            Category::Unclosed(_) => todo!(),
+            Category::UnknownBase => todo!(),
+            Category::UnknownSymbol => todo!(),
+        }
+    }
+}
+
 impl Display for Category {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -382,7 +485,7 @@ pub struct Token {
     /// The category or kind of a token
     pub category: Category,
     /// The line and the column of the start of the token
-    pub position: (usize, usize),
+    pub line_columm: (usize, usize),
 }
 
 impl Display for Token {
@@ -390,7 +493,7 @@ impl Display for Token {
         write!(
             f,
             "{}:{} {}",
-            self.position.0, self.position.1, self.category
+            self.line_columm.0, self.line_columm.1, self.category
         )
     }
 }
@@ -418,6 +521,11 @@ impl Token {
                 | Category::UnknownBase
                 | Category::UnknownSymbol
         )
+    }
+
+    /// Returns the length of a token
+    pub fn len(&self) -> usize {
+        self.category.len()
     }
 }
 
@@ -748,7 +856,7 @@ impl<'a> Iterator for Tokenizer<'a> {
             current if current.is_alphabetic() || current == '_' => self.tokenize_identifier(start),
             _ => UnknownSymbol,
         };
-        Some(Token { category, position })
+        Some(Token { category, line_columm: position })
     }
 }
 
@@ -760,7 +868,7 @@ mod tests {
         let (category, start, end) = input;
         Token {
             category,
-            position: (start, end),
+            line_columm: (start, end),
         }
     }
 

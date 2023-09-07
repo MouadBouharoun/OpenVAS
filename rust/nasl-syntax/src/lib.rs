@@ -72,23 +72,23 @@ mod tests {
             vec![
                 Token {
                     category: Category::Identifier(IdentifierType::LocalVar),
-                    position: (1, 1)
+                    line_columm: (1, 1),
                 },
                 Token {
                     category: Category::Identifier(IdentifierType::Undefined("hello".to_owned())),
-                    position: (1, 11)
+                    line_columm: (1, 11),
                 },
                 Token {
                     category: Category::Equal,
-                    position: (1, 17)
+                    line_columm: (1, 17),
                 },
                 Token {
                     category: Category::Data("World!".as_bytes().to_vec()),
-                    position: (1, 19)
+                    line_columm: (1, 19),
                 },
                 Token {
                     category: Category::Semicolon,
-                    position: (1, 27)
+                    line_columm: (1, 27),
                 }
             ]
         );
@@ -108,11 +108,11 @@ mod tests {
                     AssignOrder::AssignReturn,
                     Box::new(Variable(Token {
                         category: Identifier(IdentifierType::Undefined("a".to_owned())),
-                        position: (1, 1)
+                        line_columm: (1, 1),
                     },)),
                     Box::new(Primitive(Token {
                         category: Number(23),
-                        position: (1, 5)
+                        line_columm: (1, 5),
                     }))
                 )),
                 Ok(Assign(
@@ -120,11 +120,11 @@ mod tests {
                     AssignOrder::AssignReturn,
                     Box::new(Variable(Token {
                         category: Identifier(IdentifierType::Undefined("b".to_owned())),
-                        position: (1, 8)
+                        line_columm: (1, 8),
                     },)),
                     Box::new(Primitive(Token {
                         category: Number(1),
-                        position: (1, 12)
+                        line_columm: (1, 12),
                     }))
                 ))
             ]

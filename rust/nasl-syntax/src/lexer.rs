@@ -17,6 +17,8 @@ use crate::{
 
 /// Is used to parse Token to Statement
 pub struct Lexer<'a> {
+    // TODO: change to iterator of Token instead of Tokenizer
+    // to allopw statements of a Vec
     tokenizer: Tokenizer<'a>,
 }
 

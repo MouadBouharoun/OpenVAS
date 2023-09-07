@@ -1,0 +1,8 @@
+// just renames function and keep the complete signature
+function -> function2
+// replaces function with function3 adding a new a paramter upfront while keeping all other parameter as is
+function -> function3(a: "test", $0)
+// replaces only functions that have a single anon parameter with function4 adding the anon parameter as a a parameter
+function(${_, 1}) -> function4(a: ${_, 1}) 
+// replaces functions that have a single anon or named parameter with function4 adding the anon parameter as a a parameter
+function($1) -> function4(a: ${_, 1}) 

@@ -202,7 +202,7 @@ impl<'a> Lexer<'a> {
         match e.kind() {
             crate::ErrorKind::UnexpectedToken(k) => unclosed_token!(Token {
                 category: Category::LeftParen,
-                position: k.position
+                line_columm: k.line_columm
             }),
             _ => e,
         }
@@ -230,7 +230,7 @@ impl<'a> Lexer<'a> {
             // no update statement provided
             Some(Token {
                 category: Category::RightParen,
-                position: _,
+                line_columm: _,
             }) => {
                 self.token();
                 (End::Done(Category::RightParen), Statement::NoOp(None))
@@ -242,7 +242,7 @@ impl<'a> Lexer<'a> {
         if !matches!(end, End::Done(Category::RightParen)) {
             return Err(unclosed_token!(Token {
                 category: Category::LeftParen,
-                position: update.as_token().map_or_else(|| (0, 0), |t| t.position)
+                line_columm: update.as_token().map_or_else(|| (0, 0), |t| t.line_columm)
             }));
         }
         let (end, body) = self.statement(0, &|c| c == &Category::Semicolon)?;
@@ -268,7 +268,7 @@ impl<'a> Lexer<'a> {
         if !matches!(end, End::Done(Category::RightParen)) {
             return Err(unclosed_token!(Token {
                 category: Category::LeftParen,
-                position: condition.as_token().map_or_else(|| (0, 0), |t| t.position)
+                line_columm: condition.as_token().map_or_else(|| (0, 0), |t| t.line_columm)
             }));
         }
         let condition = condition.as_returnable_or_err()?;
@@ -419,26 +419,26 @@ mod test {
             If(
                 Box::new(Variable(Token {
                     category: Identifier(Undefined("description".to_owned())),
-                    position: (1, 5)
+                    line_columm: (1, 5)
                 })),
                 Box::new(Call(
                     Token {
                         category: Identifier(Undefined("script_oid".to_owned())),
-                        position: (1, 18)
+                        line_columm: (1, 18)
                     },
                     vec![Primitive(Token {
                         category: Data(vec![49]),
-                        position: (1, 29)
+                        line_columm: (1, 29)
                     })]
                 )),
                 Some(Box::new(Call(
                     Token {
                         category: Identifier(Undefined("display".to_owned())),
-                        position: (1, 40)
+                        line_columm: (1, 40)
                     },
                     vec![Primitive(Token {
                         category: Data(vec![104, 105]),
-                        position: (1, 48)
+                        line_columm: (1, 48)
                     })]
                 )))
             )
@@ -457,7 +457,7 @@ mod test {
             If(
                 Box::new(Variable(Token {
                     category: Identifier(Undefined("description".to_owned())),
-                    position: (1, 5)
+                    line_columm: (1, 5)
                 })),
                 Box::new(Block(vec![])),
                 None
@@ -473,15 +473,15 @@ mod test {
                 vec![
                     Variable(Token {
                         category: Identifier(Undefined("a".to_owned())),
-                        position: (1, 11 + offset),
+                        line_columm: (1, 11 + offset),
                     }),
                     Variable(Token {
                         category: Identifier(Undefined("b".to_owned())),
-                        position: (1, 14 + offset),
+                        line_columm: (1, 14 + offset),
                     }),
                     Variable(Token {
                         category: Identifier(Undefined("c".to_owned())),
-                        position: (1, 17 + offset),
+                        line_columm: (1, 17 + offset),
                     }),
                 ],
             )
@@ -503,7 +503,7 @@ mod test {
             parse("NULL;").next().unwrap().unwrap(),
             Primitive(Token {
                 category: Identifier(IdentifierType::Null),
-                position: (1, 1)
+                line_columm: (1, 1)
             })
         );
     }
@@ -514,14 +514,14 @@ mod test {
             parse("TRUE;").next().unwrap().unwrap(),
             Primitive(Token {
                 category: Identifier(IdentifierType::True),
-                position: (1, 1)
+                line_columm: (1, 1)
             })
         );
         assert_eq!(
             parse("FALSE;").next().unwrap().unwrap(),
             Primitive(Token {
                 category: Identifier(IdentifierType::False),
-                position: (1, 1)
+                line_columm: (1, 1)
             })
         );
     }
@@ -626,15 +626,15 @@ mod test {
             FunctionDeclaration(
                 Token {
                     category: Identifier(Undefined("register_packages".to_owned())),
-                    position: (1, 10)
+                    line_columm: (1, 10)
                 },
                 vec![Variable(Token {
                     category: Identifier(Undefined("buf".to_owned())),
-                    position: (1, 29)
+                    line_columm: (1, 29)
                 })],
                 Box::new(Block(vec![Return(Box::new(Primitive(Token {
                     category: Number(1),
-                    position: (1, 44)
+                    line_columm: (1, 44)
                 })))]))
             )
         );
@@ -646,12 +646,12 @@ mod test {
             FunctionDeclaration(
                 Token {
                     category: Identifier(Undefined("register_packages".to_owned())),
-                    position: (1, 10)
+                    line_columm: (1, 10)
                 },
                 vec![],
                 Box::new(Block(vec![Return(Box::new(Primitive(Token {
                     category: Number(1),
-                    position: (1, 40)
+                    line_columm: (1, 40)
                 })))]))
             )
         );
@@ -666,16 +666,16 @@ mod test {
                 AssignOrder::AssignReturn,
                 Box::new(Variable(Token {
                     category: Category::Identifier(Undefined("arg1".to_owned())),
-                    position: (1, 1)
+                    line_columm: (1, 1)
                 },)),
                 Box::new(Array(
                     Token {
                         category: Category::Identifier(IdentifierType::FCTAnonArgs),
-                        position: (1, 8),
+                        line_columm: (1, 8),
                     },
                     Some(Box::new(Primitive(Token {
                         category: Category::Number(0),
-                        position: (1, 23)
+                        line_columm: (1, 23)
                     })))
                 ))
             ))
@@ -687,12 +687,12 @@ mod test {
                 AssignOrder::AssignReturn,
                 Box::new(Variable(Token {
                     category: Category::Identifier(Undefined("arg1".to_owned())),
-                    position: (1, 1)
+                    line_columm: (1, 1)
                 },)),
                 Box::new(Array(
                     Token {
                         category: Category::Identifier(IdentifierType::FCTAnonArgs),
-                        position: (1, 8),
+                        line_columm: (1, 8),
                     },
                     None
                 ))

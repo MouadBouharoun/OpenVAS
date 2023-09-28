@@ -73,23 +73,28 @@ mod tests {
                 Token {
                     category: Category::Identifier(IdentifierType::LocalVar),
                     line_columm: (1, 1),
+                    position: (0, 9)
                 },
                 Token {
                     category: Category::Identifier(IdentifierType::Undefined("hello".to_owned())),
                     line_columm: (1, 11),
+                    position: (10, 15)
                 },
                 Token {
                     category: Category::Equal,
                     line_columm: (1, 17),
+                    position: (16, 17)
                 },
                 Token {
                     category: Category::Data("World!".as_bytes().to_vec()),
                     line_columm: (1, 19),
+                    position: (18, 26)
                 },
                 Token {
                     category: Category::Semicolon,
                     line_columm: (1, 27),
-                }
+                    position: (26, 27)
+                },
             ]
         );
     }
@@ -109,10 +114,12 @@ mod tests {
                     Box::new(Variable(Token {
                         category: Identifier(IdentifierType::Undefined("a".to_owned())),
                         line_columm: (1, 1),
+                        position: (0, 1),
                     },)),
                     Box::new(Primitive(Token {
                         category: Number(23),
                         line_columm: (1, 5),
+                        position: (4, 6),
                     }))
                 )),
                 Ok(Assign(
@@ -121,10 +128,12 @@ mod tests {
                     Box::new(Variable(Token {
                         category: Identifier(IdentifierType::Undefined("b".to_owned())),
                         line_columm: (1, 8),
+                        position: (7, 8),
                     },)),
                     Box::new(Primitive(Token {
                         category: Number(1),
                         line_columm: (1, 12),
+                        position: (11, 12),
                     }))
                 ))
             ]

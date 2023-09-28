@@ -42,12 +42,12 @@ impl<'a> Lexer<'a> {
                     Box::new(Statement::NoOp(None)),
                 ),
             ))),
-            Statement::Array(token, resolver) => Some(Ok((
+            Statement::Array(token, resolver, end) => Some(Ok((
                 End::Continue,
                 Statement::Assign(
                     assign,
                     AssignOrder::ReturnAssign,
-                    Box::new(Statement::Array(token, resolver)),
+                    Box::new(Statement::Array(token, resolver, end)),
                     Box::new(Statement::NoOp(None)),
                 ),
             ))),
@@ -109,6 +109,7 @@ mod test {
                     Primitive(Token {
                         category: Number(1),
                         line_columm: (1, 1),
+                        position: (0, 1),
                     }),
                     Operator(
                         Star,
@@ -119,12 +120,14 @@ mod test {
                                 Box::new(Variable(Token {
                                     category: Identifier(Undefined("a".to_owned())),
                                     line_columm: (1, 5),
+                                    position: (4, 5),
                                 })),
                                 Box::new(NoOp(None)),
                             ),
                             Primitive(Token {
                                 category: Number(1),
                                 line_columm: (1, 11),
+                                position: (10, 11),
                             }),
                         ],
                     ),
@@ -146,11 +149,18 @@ mod test {
                     Token {
                         category: Identifier(Undefined("a".to_owned())),
                         line_columm: (1, 1),
+                        position: (0, 1),
                     },
                     Some(Box::new(Primitive(Token {
                         category: Number(1),
                         line_columm: (1, 3),
+                        position: (2, 3),
                     }))),
+                    Some(Token {
+                        category: RightBrace,
+                        line_columm: (1, 4),
+                        position: (3, 4),
+                    }),
                 )),
                 Box::new(NoOp(None)),
             )

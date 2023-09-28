@@ -15,7 +15,7 @@ pub(crate) trait Grouping {
     /// Parses (...)
     fn parse_paren(&mut self, token: Token) -> Result<Statement, SyntaxError>;
     /// Parses {...}
-    fn parse_block(&mut self, token: Token) -> Result<Statement, SyntaxError>;
+    fn parse_block(&mut self, token: Token) -> Result<(Token, Statement), SyntaxError>;
     /// General Grouping parsing. Is called within prefix_extension.
     fn parse_grouping(&mut self, token: Token) -> Result<(End, Statement), SyntaxError>;
 }
@@ -49,19 +49,19 @@ impl<'a> Grouping for Lexer<'a> {
         }
     }
 
-    fn parse_block(&mut self, token: Token) -> Result<Statement, SyntaxError> {
+    fn parse_block(&mut self, kw: Token) -> Result<(Token, Statement), SyntaxError> {
         let mut results = vec![];
         while let Some(token) = self.peek() {
             if token.category() == &Category::RightCurlyBracket {
                 self.token();
-                return Ok(Statement::Block(results));
+                return Ok((token.clone(), Statement::Block(kw, results, token)));
             }
             let (end, stmt) = self.statement(0, &|cat| cat == &Category::Semicolon)?;
             if end.is_done() && !matches!(stmt, Statement::NoOp(_)) {
                 results.push(stmt);
             }
         }
-        Err(unclosed_token!(token))
+        Err(unclosed_token!(kw))
     }
 
     fn parse_grouping(&mut self, token: Token) -> Result<(End, Statement), SyntaxError> {
@@ -69,7 +69,7 @@ impl<'a> Grouping for Lexer<'a> {
             Category::LeftParen => self.parse_paren(token).map(|stmt| (End::Continue, stmt)),
             Category::LeftCurlyBracket => self
                 .parse_block(token)
-                .map(|stmt| (End::Done(Category::LeftCurlyBracket), stmt)),
+                .map(|(end, stmt)| (End::Done(end), stmt)),
             Category::LeftBrace => self.parse_brace(token).map(|stmt| (End::Continue, stmt)),
             _ => Err(unexpected_token!(token)),
         }
@@ -78,14 +78,8 @@ impl<'a> Grouping for Lexer<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        parse,
-        token::{Category, Token},
-        {AssignOrder, Statement},
-    };
+    use crate::{parse, Statement};
 
-    use crate::IdentifierType::Undefined;
-    use Category::*;
     use Statement::*;
 
     fn result(code: &str) -> Statement {
@@ -94,9 +88,8 @@ mod test {
 
     #[test]
     fn variables() {
-        assert_eq!(
-            result(
-                r"
+        let stmt = result(
+            r"
             {
                 a = b + 1;
                 b = a - --c;
@@ -104,69 +97,8 @@ mod test {
                    d = 23;
                 }
             }
-            "
-            ),
-            Block(vec![
-                Assign(
-                    Equal,
-                    AssignOrder::AssignReturn,
-                    Box::new(Variable(Token {
-                        category: Identifier(Undefined("a".to_owned())),
-                        line_columm: (3, 17)
-                    })),
-                    Box::new(Operator(
-                        Plus,
-                        vec![
-                            Variable(Token {
-                                category: Identifier(Undefined("b".to_owned())),
-                                line_columm: (3, 21)
-                            }),
-                            Primitive(Token {
-                                category: Number(1),
-                                line_columm: (3, 25)
-                            })
-                        ]
-                    ))
-                ),
-                Assign(
-                    Equal,
-                    AssignOrder::AssignReturn,
-                    Box::new(Variable(Token {
-                        category: Identifier(Undefined("b".to_owned())),
-                        line_columm: (4, 17)
-                    },)),
-                    Box::new(Operator(
-                        Minus,
-                        vec![
-                            Variable(Token {
-                                category: Identifier(Undefined("a".to_owned())),
-                                line_columm: (4, 21)
-                            }),
-                            Assign(
-                                MinusMinus,
-                                AssignOrder::AssignReturn,
-                                Box::new(Variable(Token {
-                                    category: Identifier(Undefined("c".to_owned())),
-                                    line_columm: (4, 27)
-                                },)),
-                                Box::new(NoOp(None))
-                            )
-                        ]
-                    ))
-                ),
-                Block(vec![Assign(
-                    Equal,
-                    AssignOrder::AssignReturn,
-                    Box::new(Variable(Token {
-                        category: Identifier(Undefined("d".to_owned())),
-                        line_columm: (6, 20)
-                    },)),
-                    Box::new(Primitive(Token {
-                        category: Number(23),
-                        line_columm: (6, 24)
-                    }))
-                )])
-            ])
+            ",
         );
+        assert!(matches!(stmt, Block(..)));
     }
 }

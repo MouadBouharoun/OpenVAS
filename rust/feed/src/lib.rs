@@ -5,9 +5,9 @@
 #![doc = include_str!("../README.md")]
 #![warn(missing_docs)]
 mod oid;
+mod replace;
 mod update;
 mod verify;
-mod replace;
 
 pub use oid::Oid;
 pub use update::feed_version as version;

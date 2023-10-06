@@ -148,10 +148,11 @@ impl<'a> Lexer<'a> {
         if !matches!(paren.category(), Category::LeftParen) {
             return Err(unexpected_token!(paren));
         }
-        let (end, parameter) = self.parse_comma_group(Category::RightParen)?;
-        if !end {
-            return Err(unclosed_token!(token));
-        }
+        let (gend, parameter) = self.parse_comma_group(Category::RightParen)?;
+        let parameter_end_token = match gend {
+            End::Done(t) => t,
+            End::Continue => return Err(unclosed_token!(token)),
+        };
 
         let block = self
             .token()
@@ -162,7 +163,13 @@ impl<'a> Lexer<'a> {
         let (end, block) = self.parse_block(block)?;
         Ok((
             End::Done(end),
-            Statement::FunctionDeclaration(token, id, parameter, Box::new(block)),
+            Statement::FunctionDeclaration(
+                token,
+                id,
+                parameter,
+                parameter_end_token,
+                Box::new(block),
+            ),
         ))
     }
 

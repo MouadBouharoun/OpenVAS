@@ -105,7 +105,7 @@ impl<'a> Infix for Lexer<'a> {
                         // when the right side is a parameter list than it is an array
                         let lhs = {
                             match rhs {
-                                Statement::Parameter(_) => {
+                                Statement::Parameter(..) => {
                                     Statement::Array(var.clone(), None, None)
                                 }
                                 _ => lhs,

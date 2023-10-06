@@ -1,0 +1,62 @@
+[[cmds]]
+
+[cmds.find]
+FunctionByNameAndParameter = [
+    "register_product",
+    [{ NameValue = [
+    "service",
+    "\"www\"",
+] }],
+]
+
+[cmds.with.Parameter.Push]
+Named = [
+    "service_to_be",
+    "\"world-wide-shop\"",
+]
+
+[[cmds]]
+
+[cmds.find]
+FunctionByNameAndParameter = [
+    "register_product",
+    [{ NameValue = [
+    "service",
+    "\"www\"",
+] }],
+]
+
+[cmds.with.Parameter]
+RemoveNamed = "service"
+
+[[cmds]]
+
+[cmds.find]
+FunctionByName = "register_product"
+
+[cmds.with.Parameter.Rename]
+previous = "service_to_be"
+new = "service"
+
+# [[cmds]]
+
+# [cmds.find]
+# FunctionByName = "register_product"
+
+# [cmds.with.Parameter.Rename]
+# previous = "cpe"
+# new = "runtime_information"
+
+# [[cmds]]
+
+# [cmds.find]
+# FunctionByName = "register_host_detail"
+
+# [cmds.with]
+# Name = "hokus_pokus"
+
+# [[cmds]]
+# with = "Remove"
+
+# [cmds.find]
+# FunctionByName = "script_xref"

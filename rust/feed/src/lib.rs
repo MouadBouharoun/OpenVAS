@@ -5,7 +5,7 @@
 #![doc = include_str!("../README.md")]
 #![warn(missing_docs)]
 mod oid;
-mod replace;
+pub mod transpile;
 mod update;
 mod verify;
 
@@ -18,3 +18,4 @@ pub use verify::Error as VerifyError;
 pub use verify::FileNameLoader;
 pub use verify::HashSumNameLoader;
 pub use verify::Hasher;
+pub use verify::NaslFileFinder;

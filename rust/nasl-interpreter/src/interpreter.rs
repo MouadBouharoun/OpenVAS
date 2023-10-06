@@ -133,7 +133,7 @@ where
             While(_, condition, body) => self.while_loop(condition, body),
             Repeat(_, body, condition) => self.repeat_loop(body, condition),
             ForEach(_, variable, iterable, body) => self.for_each_loop(variable, iterable, body),
-            FunctionDeclaration(_, name, args, exec) => self.declare_function(name, args, exec),
+            FunctionDeclaration(_, name, args, _, exec) => self.declare_function(name, args, exec),
             Primitive(token) => TryFrom::try_from(token).map_err(|e: TokenCategory| e.into()),
             Variable(token) => {
                 let name: NaslValue = TryFrom::try_from(token)?;

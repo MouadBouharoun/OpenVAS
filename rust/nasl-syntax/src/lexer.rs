@@ -123,8 +123,8 @@ impl<'a> Lexer<'a> {
 
             if self.needs_postfix(op.clone()) {
                 let (end, stmt) = self
-                    .postfix_statement(op, token, left)
-                    .expect("needs postfix should have been validated before")?;
+                    .postfix_statement(op, token.clone(), left)
+                    .ok_or_else(|| unexpected_token!(token.clone()))??;
                 self.token();
                 left = stmt;
                 if let End::Done(cat) = end {

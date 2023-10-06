@@ -18,6 +18,9 @@ pub enum AssignOrder {
 
 /// Is a executable step.
 #[derive(Clone, Debug, PartialEq, Eq)]
+// TODO: change from enum to struct that contains a Kind. This would allow us to redefine Statement
+// to contain start an end token, may comments so that a future formater can just depend on
+// Statement rather than have to reimplement logic
 pub enum Statement {
     /// Either a Number, String, Boolean or Null
     Primitive(Token),
@@ -28,6 +31,7 @@ pub enum Statement {
     /// Is a array variable, it contains the lookup token as well as an optional lookup statement
     Array(Token, Option<Box<Statement>>, Option<Token>),
     /// Is a call of a function
+    // TODO: change to Box<Statement> and use Parameter
     Call(Token, Vec<Statement>, Token),
     /// Special exit call
     Exit(Token, Box<Statement>, Token),
@@ -75,7 +79,9 @@ pub enum Statement {
     /// A set of expression within { ... }
     Block(Token, Vec<Statement>, Token),
     /// Function declaration; contains an identifier token, parameter statement and a block statement
-    FunctionDeclaration(Token, Token, Vec<Statement>, Box<Statement>),
+    // TODO: change to Box<Statement> as Parameter statement for statements instead of
+    // Vec<Statement>
+    FunctionDeclaration(Token, Token, Vec<Statement>, Token, Box<Statement>),
     /// An empty operation, e.g. ;
     NoOp(Option<Token>),
     /// End of File
@@ -142,7 +148,7 @@ impl Statement {
             Statement::NamedParameter(token, _) => Some(token),
             Statement::Assign(_, _, stmt, _) => stmt.as_token(),
             Statement::Operator(_, stmts) => Statement::first_stmts_token(stmts),
-            Statement::FunctionDeclaration(kw, _, _, _)
+            Statement::FunctionDeclaration(kw, _, _, _, _)
             | Statement::Block(kw, _, _)
             | Statement::If(kw, _, _, _, _)
             | Statement::While(kw, _, _)
@@ -250,11 +256,12 @@ impl Statement {
                 results.extend(stmt.as_tokens());
                 results
             }
-            Statement::FunctionDeclaration(kw, name, params, stmt) => {
+            Statement::FunctionDeclaration(kw, name, params, rp, stmt) => {
                 let mut results = vec![kw, name];
                 for stmt in params {
                     results.extend(stmt.as_tokens());
                 }
+                results.push(rp);
                 results.extend(stmt.as_tokens());
                 results
             }
@@ -262,29 +269,27 @@ impl Statement {
         }
     }
 
-    /// Returns the position of the whole statement
-    pub fn position(&self) -> ((usize, usize), (usize, usize)) {
+    /// Calculates the position of the statement
+    pub fn position(&self) -> (usize, usize) {
         match self {
             Statement::Array(id, _, Some(end)) | Statement::Call(id, _, end) => {
-                (id.position, end.position)
+                (id.position.0, end.position.1)
             }
             _ => {
                 let tokens = self.as_tokens();
                 if let (Some(t1), Some(t2)) = (tokens.first(), tokens.last()) {
-                    return (t1.position, t2.position);
+                    (t1.position.0, t2.position.1)
+                } else {
+                    (0, 0)
                 }
-                ((0, 0), (0, 0))
             }
         }
     }
 
     /// Calculates the byte range of the statement
     pub fn range(&self) -> Range<usize> {
-        let ((start, _), (_, end)) = self.position();
-        // calculate based on stuff not reflected in token
-        match self {
-            _ => Range { start, end },
-        }
+        let (start, end) = self.position();
+        Range { start, end }
     }
 
     /// Finds all statements in itself or itself that matches the wanted function
@@ -314,9 +319,9 @@ impl Statement {
     ///
     /// ```
     ///
-    pub fn find<'a, F>(&'a self, wanted: &'a F) -> Vec<&'a Statement>
+    pub fn find<'a, 'b, F>(&'a self, wanted: &'b F) -> Vec<&'a Statement>
     where
-        F: Fn(&Statement) -> bool,
+        F: Fn(&'a Statement) -> bool,
     {
         if wanted(self) {
             vec![self]
@@ -369,7 +374,7 @@ impl Statement {
                     results.extend(Self::find(&stmt3, wanted));
                     results.extend(Self::find(&stmt4, wanted));
                 }
-                Statement::FunctionDeclaration(_, _, stmts, stmt) => {
+                Statement::FunctionDeclaration(_, _, stmts, _, stmt) => {
                     results.extend(Self::find(&stmt, wanted));
                     for stmt in stmts {
                         results.extend(Self::find(&stmt, wanted));
@@ -433,7 +438,7 @@ impl fmt::Display for Statement {
             Statement::Repeat(_, e, c) => write!(f, "repeat {e} until {c}"),
             Statement::ForEach(_, v, a, e) => write!(f, "foreach {}({a}) {{{e}}}", v.category()),
             Statement::Block(..) => write!(f, "{{ ... }}"),
-            Statement::FunctionDeclaration(_, n, p, _) => {
+            Statement::FunctionDeclaration(_, n, p, _, _) => {
                 write!(f, "function {}({}) {{ ... }}", n.category(), as_str_list(p))
             }
             Statement::NoOp(_) => write!(f, "NoOp"),

@@ -23,10 +23,9 @@ pub(crate) trait Grouping {
 impl<'a> Lexer<'a> {
     fn parse_brace(&mut self, token: Token) -> Result<Statement, SyntaxError> {
         let (end, right) = self.parse_comma_group(Category::RightBrace)?;
-        if !end {
-            Err(unclosed_token!(token))
-        } else {
-            Ok(Statement::Parameter(right))
+        match end {
+            End::Done(_end) => Ok(Statement::Parameter(right)),
+            End::Continue => Err(unclosed_token!(token)),
         }
     }
 }
